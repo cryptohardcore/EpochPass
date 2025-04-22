@@ -1,6 +1,6 @@
 # Ethereum OG Score
 
-A Ghibli-inspired landing page to check your Ethereum OG Score.
+Landing page with wallet input, Connect Wallet button, and Vitalik Frog illustration.
 
 ## Run locally
 
