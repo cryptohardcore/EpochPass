@@ -1,6 +1,6 @@
-# Hello World App
+# Ethereum OG Score
 
-A simple Next.js "Hello World" application to be deployed on Vercel.
+A Ghibli-inspired landing page to check your Ethereum OG Score.
 
 ## Run locally
 
