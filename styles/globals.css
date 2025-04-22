@@ -26,19 +26,30 @@ p {
   margin-bottom: 20px;
 }
 
+.frog-image {
+  width: 200px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 input {
   padding: 10px;
   width: 300px;
-  max-width: 80%;
   border: 2px solid #00FF7F;
   border-radius: 10px;
   background: #111;
   color: #00FF7F;
-  margin-bottom: 15px;
   font-size: 1rem;
 }
 
-button {
+.connect-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
@@ -49,7 +60,7 @@ button {
   transition: transform 0.3s ease;
 }
 
-button:hover {
+.connect-btn:hover {
   transform: scale(1.05);
 }
 
