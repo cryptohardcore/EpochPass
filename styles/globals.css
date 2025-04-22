@@ -32,13 +32,6 @@ p {
   border-radius: 20px;
 }
 
-.input-group {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
 input {
   padding: 10px;
   width: 300px;
@@ -47,6 +40,26 @@ input {
   background: #111;
   color: #00FF7F;
   font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.check-btn {
+  padding: 10px 20px;
+  border: 2px solid #00FF7F;
+  border-radius: 10px;
+  background: transparent;
+  color: #00FF7F;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
 .connect-btn {
@@ -60,7 +73,8 @@ input {
   transition: transform 0.3s ease;
 }
 
-.connect-btn:hover {
+.connect-btn:hover,
+.check-btn:hover {
   transform: scale(1.05);
 }
 
