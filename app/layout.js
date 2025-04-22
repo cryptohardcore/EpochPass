@@ -2,7 +2,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <title>Hello World App</title>
+        <title>Ethereum OG Score</title>
       </head>
       <body>
         {children}
