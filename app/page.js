@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
 export default function HomePage() {
@@ -8,6 +8,8 @@ export default function HomePage() {
   const [firstTxDate, setFirstTxDate] = useState('');
   const [points, setPoints] = useState('');
 
+  const handleAddressInput = (e) => { setWalletAddress(e.target.value); };
+
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
@@ -15,47 +17,28 @@ export default function HomePage() {
         const accounts = await provider.send("eth_requestAccounts", []);
         setWalletAddress(accounts[0]);
         setStatus('Connected');
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      alert('Please install MetaMask!');
-    }
+        checkScore(accounts[0]);
+      } catch (err) { console.error(err); }
+    } else { alert('Please install MetaMask!'); }
   };
 
-  const checkScore = async () => {
-    if (!walletAddress) {
-      alert('Please connect your wallet first!');
-      return;
-    }
+  const checkScore = async (addressParam) => {
+    const addressToCheck = addressParam || walletAddress;
+    if (!addressToCheck) { alert('Please enter or connect a wallet address!'); return; }
     const alchemyApiKey = 'D58XPcpaMPHKrXvOIB_dV5Bxyhd6osAn';
-    const url = `https://eth-mainnet.g.alchemy.com/v2/{alchemyApiKey}`;
-    const data = {
-      jsonrpc: "2.0",
-      id: 0,
-      method: "alchemy_getAssetTransfers",
-      params: [{
-        fromAddress: walletAddress,
-        category: ["external"],
-        order: "asc",
-        maxCount: "1"
-      }]
-    };
+    const url = `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`;
+    const data = { jsonrpc: "2.0", id: 0, method: "alchemy_getAssetTransfers",
+      params: [{ fromAddress: addressToCheck, category: ["external"], order: "asc", maxCount: "1" }] };
 
     try {
       const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
       });
       const resJson = await response.json();
       const transfer = resJson.result.transfers[0];
       if (transfer) {
         const firstTxTimestamp = new Date(transfer.metadata.blockTimestamp);
         setFirstTxDate(firstTxTimestamp.toDateString());
-
         const currentTimestamp = Date.now() / 1000;
         const firstInteractionTimestamp = firstTxTimestamp.getTime() / 1000;
         const years = (currentTimestamp - firstInteractionTimestamp) / 31536000;
@@ -65,28 +48,25 @@ export default function HomePage() {
         setFirstTxDate('No transactions found');
         setPoints(0);
       }
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   return (
     <main className="container">
+      <button className="wallet-btn" onClick={connectWallet}>
+        {status === 'Connected' ? `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
+      </button>
       <img src="/vitalik-frog.png" alt="Vitalik Frog" className="frog-image" />
       <h1>Ethereum OG Score</h1>
       <p>Discover how long you've been using Ethereum.</p>
-      <input type="text" value={walletAddress} placeholder="Enter your Ethereum wallet address..." readOnly />
+      <input type="text" value={walletAddress} onChange={handleAddressInput} placeholder="Enter your Ethereum wallet address..." />
       <div className="button-group">
-        <button className="check-btn" onClick={checkScore}>Check Score</button>
-        <button className="connect-btn" onClick={connectWallet}>Connect Wallet</button>
+        <button className="check-btn" onClick={() => checkScore()}>Check Score</button>
       </div>
       <div style={{ marginTop: '20px' }}>
-        <p>Status: {status}</p>
         {firstTxDate && <p>First Interaction: {firstTxDate}</p>}
         {points !== '' && <p>Earned Points: {points}</p>}
       </div>
     </main>
   );
 }
-
-

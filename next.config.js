@@ -1,7 +1,2 @@
-const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
-};
-
+const nextConfig = { experimental: { appDir: true }};
 module.exports = nextConfig;

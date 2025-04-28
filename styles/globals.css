@@ -4,7 +4,18 @@ body {
   color: #00FF7F;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
+.wallet-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  background-color: #00FF7F;
+  color: #000;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
 .container {
   height: 100vh;
   display: flex;
@@ -14,71 +25,17 @@ body {
   text-align: center;
   padding: 20px;
 }
-
-h1 {
-  font-size: 3rem;
-  margin-bottom: 10px;
-  animation: fadeIn 2s ease-in-out;
-}
-
-p {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-}
-
-.frog-image {
-  width: 200px;
-  margin-bottom: 20px;
-  border-radius: 20px;
-}
-
+h1 { font-size: 3rem; margin-bottom: 10px; }
+p { font-size: 1.2rem; margin-bottom: 10px; }
+.frog-image { width: 200px; margin-bottom: 20px; border-radius: 20px; }
 input {
-  padding: 10px;
-  width: 300px;
-  border: 2px solid #00FF7F;
-  border-radius: 10px;
-  background: #111;
-  color: #00FF7F;
-  font-size: 1rem;
-  margin-bottom: 15px;
+  padding: 10px; width: 300px; border: 2px solid #00FF7F; border-radius: 10px;
+  background: #111; color: #00FF7F; font-size: 1rem; margin-bottom: 15px;
 }
-
-.button-group {
-  display: flex;
-  flex-direction: row;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
+.button-group { display: flex; gap: 15px; justify-content: center; }
 .check-btn {
-  padding: 10px 20px;
-  border: 2px solid #00FF7F;
-  border-radius: 10px;
-  background: transparent;
-  color: #00FF7F;
-  font-size: 1rem;
-  cursor: pointer;
+  padding: 10px 20px; border: 2px solid #00FF7F; border-radius: 10px;
+  background: transparent; color: #00FF7F; font-size: 1rem; cursor: pointer;
   transition: transform 0.3s ease;
 }
-
-.connect-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  background-color: #00FF7F;
-  color: #000;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.connect-btn:hover,
-.check-btn:hover {
-  transform: scale(1.05);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+.check-btn:hover { transform: scale(1.05); }
