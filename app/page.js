@@ -86,6 +86,16 @@ export default function HomePage() {
 
   return (
     <main className="container">
+      <img 
+        src="/vitalik-frog.png" 
+        alt="Vitalik Frog" 
+        style={{ 
+          width: '200px', 
+          height: 'auto',
+          marginBottom: '20px',
+          borderRadius: '10px'
+        }} 
+      />
       <button className="wallet-btn" onClick={connectWallet}>
         {status === 'Connected' ? `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
       </button>
