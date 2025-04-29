@@ -39,37 +39,82 @@ export default function HomePage() {
 
     const alchemyApiKey = 'D58XPcpaMPHKrXvOIB_dV5Bxyhd6osAn';
     const url = `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`;
-    const data = {
-      jsonrpc: "2.0",
-      id: 0,
-      method: "alchemy_getAssetTransfers",
-      params: [{
-        fromAddress: addressToCheck,
-        category: ["external"],
-        order: "asc",
-        maxCount: "1"
-      }]
-    };
-
+    
     try {
       setLoading(true);
-      const response = await fetch(url, {
+      
+      // First, get the transfers
+      const transferData = {
+        jsonrpc: "2.0",
+        id: 0,
+        method: "alchemy_getAssetTransfers",
+        params: [{
+          fromAddress: addressToCheck,
+          category: ["external", "internal", "erc20", "erc721", "erc1155"],
+          order: "asc",
+          maxCount: "0x1"
+        }]
+      };
+
+      const transferResponse = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(transferData)
       });
-      const resJson = await response.json();
-      const transfer = resJson?.result?.transfers?.[0];
+      
+      if (!transferResponse.ok) {
+        throw new Error(`HTTP error! status: ${transferResponse.status}`);
+      }
+      
+      const transferJson = await transferResponse.json();
+      console.log('Alchemy API Response:', transferJson);
 
-      if (transfer) {
-        const firstTxTimestamp = new Date(transfer.metadata.blockTimestamp);
+      if (transferJson.error) {
+        throw new Error(transferJson.error.message);
+      }
+
+      const transfers = transferJson?.result?.transfers || [];
+      console.log('Transfers found:', transfers);
+
+      if (transfers.length > 0) {
+        const firstTransfer = transfers[0];
+        console.log('First transfer:', firstTransfer);
+        
+        // Get block timestamp using block number
+        const blockData = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "eth_getBlockByNumber",
+          params: [firstTransfer.blockNum, false]
+        };
+
+        const blockResponse = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(blockData)
+        });
+
+        if (!blockResponse.ok) {
+          throw new Error(`HTTP error! status: ${blockResponse.status}`);
+        }
+
+        const blockJson = await blockResponse.json();
+        console.log('Block data:', blockJson);
+
+        if (blockJson.error) {
+          throw new Error(blockJson.error.message);
+        }
+
+        const blockTimestamp = parseInt(blockJson.result.timestamp, 16) * 1000; // Convert hex to milliseconds
+        const firstTxTimestamp = new Date(blockTimestamp);
         setFirstTxDate(firstTxTimestamp.toDateString());
 
-        const currentTimestamp = Date.now() / 1000;
-        const firstInteractionTimestamp = firstTxTimestamp.getTime() / 1000;
-        const years = (currentTimestamp - firstInteractionTimestamp) / 31536000;
+        const currentTimestamp = Date.now();
+        const years = (currentTimestamp - blockTimestamp) / (1000 * 60 * 60 * 24 * 365);
         const calculatedPoints = Math.floor(years * 100);
         setPoints(calculatedPoints > 0 ? calculatedPoints : 0);
       } else {
@@ -78,7 +123,9 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error("Error fetching data from Alchemy:", err);
-      alert("Failed to retrieve score. See console for details.");
+      setFirstTxDate('Error checking transactions');
+      setPoints(0);
+      alert(`Failed to retrieve score: ${err.message}`);
     } finally {
       setLoading(false);
     }
