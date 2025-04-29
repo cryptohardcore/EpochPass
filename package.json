@@ -1,6 +1,6 @@
 {
   "name": "ethereum-og-score",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
