@@ -1,6 +1,6 @@
-# Ethereum OG Score
+# EpochPass
 
-Landing page with wallet input, Connect Wallet button, and Vitalik Frog illustration.
+How long have you been in Ethereum, bro? EpochPass ranks degens based on their first interaction stamp onchain, and let's mint a soulbound NFT 
 
 ## Run locally
 
