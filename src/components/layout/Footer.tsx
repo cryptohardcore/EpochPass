@@ -6,9 +6,9 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 border-t border-gray-800 mt-16">
       <div className="container-custom py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Brand */}
-          <div className="col-span-1 md:col-span-1">
+          <div className="col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <Hourglass className="w-6 h-6 text-primary-500" />
               <span className="text-lg font-bold gradient-text">EpochPass</span>
@@ -30,69 +30,19 @@ const Footer = () => {
           </div>
 
           {/* Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Navigate</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/dashboard" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link to="/leaderboard" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Leaderboard
-                </Link>
-              </li>
-              <li>
-                <Link to="/perks" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Perks
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Resources</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Documentation
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Community
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Legal</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">
-                  Terms of Service
-                </a>
-              </li>
-            </ul>
+          <div className="flex justify-end items-center space-x-6">
+            <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm">
+              Home
+            </Link>
+            <Link to="/dashboard" className="text-gray-400 hover:text-white transition-colors text-sm">
+              Dashboard
+            </Link>
+            <Link to="/leaderboard" className="text-gray-400 hover:text-white transition-colors text-sm">
+              Leaderboard
+            </Link>
+            <Link to="/perks" className="text-gray-400 hover:text-white transition-colors text-sm">
+              Perks
+            </Link>
           </div>
         </div>
 

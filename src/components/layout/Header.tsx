@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Hourglass, ChevronDown } from 'lucide-react';
+import { Menu, X, Hourglass } from 'lucide-react';
 import { Transition } from '@headlessui/react';
 import { useWallet } from '../../contexts/WalletContext';
 import ConnectWalletButton from '../wallet/ConnectWalletButton';
@@ -20,14 +20,12 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu when changing routes
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Dashboard', path: '/' },
     { name: 'Leaderboard', path: '/leaderboard' },
     { name: 'Perks', path: '/perks' },
   ];
@@ -40,13 +38,11 @@ const Header = () => {
     >
       <div className="container-custom">
         <div className="flex items-center justify-between py-4">
-          {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <Hourglass className="w-7 h-7 text-primary-500" />
             <span className="text-xl font-bold gradient-text">EpochPass</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <div className="flex space-x-6">
               {navLinks.map((link) => (
@@ -66,7 +62,6 @@ const Header = () => {
             <ConnectWalletButton />
           </nav>
 
-          {/* Mobile Menu Button */}
           <div className="flex items-center md:hidden">
             <ConnectWalletButton buttonClassName="mr-2" showText={false} />
             <button
@@ -80,7 +75,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <Transition
         show={isOpen}
         enter="transition ease-out duration-200"
