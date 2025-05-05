@@ -1,27 +1,138 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Hourglass, Clock, Trophy, Sparkles } from 'lucide-react';
+import { Hourglass } from 'lucide-react';
 import AddressInput from '../components/wallet/AddressInput';
 import { useWallet } from '../contexts/WalletContext';
+import NFTCard from '../components/nft/NFTCard';
+import MintButton from '../components/nft/MintButton';
+import SocialShareButtons from '../components/social/SocialShareButtons';
+import { formatDetailedTimeAgo } from '../utils/formatters';
+
+const getTierFromPoints = (points: number): 'og' | 'captain' | 'corporal' | 'soldier' => {
+  if (points >= 300) return 'og';
+  if (points >= 200) return 'captain';
+  if (points >= 100) return 'corporal';
+  return 'soldier';
+};
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { connectWallet, isConnected } = useWallet();
-  const [isSearching, setIsSearching] = useState(false);
+  const { connectWallet, isConnected, account, firstTxDate, points, isChecking, checkWalletHistory } = useWallet();
+  const [isNftMinted, setIsNftMinted] = useState(false);
 
-  const handleSearch = (address: string) => {
-    setIsSearching(true);
-    // Simulate search delay
-    setTimeout(() => {
-      setIsSearching(false);
-      navigate('/dashboard', { state: { address } });
-    }, 1000);
+  const handleSearch = async (address: string) => {
+    await checkWalletHistory(address);
   };
+
+  const handleMint = async () => {
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        setIsNftMinted(true);
+        resolve();
+      }, 2000);
+    });
+  };
+
+  const timestamp = firstTxDate ? new Date(firstTxDate).getTime() / 1000 : Date.now() / 1000;
+  const timeAgo = formatDetailedTimeAgo(timestamp);
+  const tier = points ? getTierFromPoints(points) : 'soldier';
+  const remainingNfts = 10000 - 4253; // Mock data
+  const shareUrl = `https://epochpass.eth/address/${account}`;
+  const shareText = `I've been on Ethereum for ${timeAgo} and ranked #${points} on @EpochPass! Check your rank:`;
+
+  if (isConnected && firstTxDate) {
+    return (
+      <div className="container-custom py-8 md:py-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-10">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Your EpochPass</h1>
+            <p className="text-gray-400">
+              Discover your Ethereum history and claim your unique soulbound NFT.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="flex flex-col">
+              <NFTCard
+                tier={tier}
+                timestamp={timestamp}
+                imageUrl="https://images.pexels.com/photos/8370752/pexels-photo-8370752.jpeg"
+                rank={points || 0}
+              />
+              
+              <div className="mt-6">
+                <div className="mb-4 flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Share your rank</h3>
+                  <SocialShareButtons
+                    title="My EpochPass Rank"
+                    text={shareText}
+                    url={shareUrl}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <div className="card p-6 md:p-8 mb-6">
+                <h2 className="text-2xl font-bold mb-6">Your Ethereum Journey</h2>
+                
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-lg font-medium">First Transaction</div>
+                    <div className="text-gray-400">
+                      {firstTxDate ? new Date(firstTxDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'No transactions found'}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-lg font-medium">Time in Ethereum</div>
+                    <div className="text-gray-400">{timeAgo}</div>
+                  </div>
+                  
+                  <div className="border-t border-gray-800 pt-6 mt-6">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-lg font-medium">Claim Your Soulbound NFT</h3>
+                      <span className="text-sm text-gray-400">{remainingNfts} / 10000 remaining</span>
+                    </div>
+                    
+                    {isNftMinted ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-success-700/20 border border-success-700/50 rounded-lg p-4 text-success-50"
+                      >
+                        <div className="font-medium">NFT successfully minted!</div>
+                        <p className="text-sm opacity-80 mt-1">Your EpochPass NFT is now bound to your wallet forever.</p>
+                      </motion.div>
+                    ) : (
+                      <>
+                        <p className="text-gray-400 mb-4">
+                          Preserve your Ethereum history by minting a unique, soulbound NFT that captures your timeline.
+                        </p>
+                        <MintButton 
+                          price="0.05"
+                          onMint={handleMint}
+                          disabled={!isConnected}
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
-      {/* Hero Section */}
       <div className="relative bg-hero-pattern hero-animation">
         <div className="container-custom py-16 md:py-24 lg:py-32">
           <div className="max-w-3xl mx-auto text-center mb-12">
@@ -61,8 +172,9 @@ const HomePage = () => {
                     <button
                       onClick={() => connectWallet()}
                       className="btn-primary"
+                      disabled={isChecking}
                     >
-                      Connect Wallet
+                      {isChecking ? 'Checking History...' : 'Connect Wallet'}
                     </button>
                   </div>
                 </div>
@@ -75,103 +187,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-      
-      {/* Features Section */}
-      <section className="py-16 bg-gray-900/50">
-        <div className="container-custom">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">How EpochPass Works</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Our platform records the first on-chain interactions of Ethereum addresses, 
-              allowing you to discover and showcase your place in crypto history.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="card p-6"
-            >
-              <div className="rounded-full bg-primary-900/50 w-12 h-12 flex items-center justify-center mb-4">
-                <Clock className="w-6 h-6 text-primary-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Track Your Time</h3>
-              <p className="text-gray-400">
-                Discover exactly when you first interacted with the Ethereum blockchain
-                and how long you've been part of the ecosystem.
-              </p>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="card p-6"
-            >
-              <div className="rounded-full bg-secondary-900/50 w-12 h-12 flex items-center justify-center mb-4">
-                <Trophy className="w-6 h-6 text-secondary-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Unique Ranking</h3>
-              <p className="text-gray-400">
-                See your rank among all Ethereum addresses based on your first transaction
-                date and showcase your OG status.
-              </p>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="card p-6"
-            >
-              <div className="rounded-full bg-accent-900/50 w-12 h-12 flex items-center justify-center mb-4">
-                <Sparkles className="w-6 h-6 text-accent-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Mint Soulbound NFT</h3>
-              <p className="text-gray-400">
-                Create a unique, non-transferable NFT that represents your place in
-                Ethereum history and unlocks special perks.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="py-16">
-        <div className="container-custom">
-          <div className="card p-8 md:p-12 bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800">
-            <div className="md:flex items-center justify-between">
-              <div className="mb-6 md:mb-0 md:mr-6">
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Ready to claim your spot?</h2>
-                <p className="text-gray-400">
-                  Connect your wallet now and discover your place in Ethereum history.
-                </p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                <button 
-                  onClick={() => connectWallet()}
-                  className="btn-primary px-6 py-3"
-                >
-                  Connect Wallet
-                </button>
-                <button
-                  onClick={() => navigate('/leaderboard')}
-                  className="btn-outline px-6 py-3"
-                >
-                  View Leaderboard
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

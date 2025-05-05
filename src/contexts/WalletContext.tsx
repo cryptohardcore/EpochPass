@@ -92,7 +92,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     
     try {
       const ethProvider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await ethProvider.send('eth_requestAccounts', []);
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       
       setAccount(accounts[0]);
       setProvider(ethProvider);
