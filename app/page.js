@@ -17,6 +17,7 @@ export default function HomePage() {
     if (window.ethereum) {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
+        setProvider(provider);
         const accounts = await provider.send("eth_requestAccounts", []);
         setWalletAddress(accounts[0]);
         setStatus('Connected');

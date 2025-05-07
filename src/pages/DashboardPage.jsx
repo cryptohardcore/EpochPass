@@ -165,7 +165,7 @@ const DashboardPage = () => {
                         Preserve your Ethereum history by minting a unique, soulbound NFT that captures your timeline.
                       </p>
                       <MintButton 
-                        price="0.05"
+                        price="0.01"
                         onMint={handleMint}
                         disabled={!isConnected}
                       />

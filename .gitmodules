@@ -1,0 +1,3 @@
+[submodule "contracts"]
+	path = contracts
+	url = https://gitlab.com/crypto6345218/epoch-crypto.git

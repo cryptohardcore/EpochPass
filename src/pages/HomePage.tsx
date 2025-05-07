@@ -116,7 +116,6 @@ const HomePage = () => {
                         </p>
                         <MintButton 
                           price="0.05"
-                          onMint={handleMint}
                           disabled={!isConnected}
                         />
                       </>

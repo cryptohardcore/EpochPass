@@ -1,4 +1,3 @@
-// src/components/wallet/ConnectWalletButton.tsx
 import React, { useState } from 'react';
 import { Wallet, Loader2 } from 'lucide-react';
 import { useWallet } from '../../contexts/WalletContext';
@@ -32,23 +31,43 @@ const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({
     disconnectWallet();
     setIsDropdownOpen(false);
   };
-
+  
   return (
     <div className="relative">
       {isConnected ? (
-        <button onClick={toggleDropdown} className={`btn-outline py-1.5 ${buttonClassName}`}>
+        // Connected state
+        <button
+          onClick={toggleDropdown}
+          className={`btn-outline py-1.5 ${buttonClassName}`}
+        >
           <Wallet className="h-4 w-4 mr-2" />
-          {showText && <span>{formatAddress(account!)}</span>}
+          {showText && (
+            <>
+              <span>{formatAddress(account || '')}</span>
+            </>
+          )}
         </button>
       ) : (
-        <button onClick={handleConnect} disabled={isConnecting} className={`btn-primary ${buttonClassName}`}>
-          {isConnecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Wallet className="h-4 w-4 mr-2" />}
-          {showText && <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>}
+        // Not connected state
+        <button
+          onClick={handleConnect}
+          disabled={isConnecting}
+          className={`btn-primary ${buttonClassName}`}
+        >
+          {isConnecting ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Wallet className="h-4 w-4 mr-2" />
+          )}
+          {showText && (
+            <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>
+          )}
         </button>
       )}
 
+      {/* Dropdown menu */}
       {isDropdownOpen && isConnected && (
-        <div
+        <div 
           className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-50"
           role="menu"
           aria-orientation="vertical"
