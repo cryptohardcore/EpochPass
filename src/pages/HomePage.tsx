@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Hourglass } from 'lucide-react';
 import AddressInput from '../components/wallet/AddressInput';
-import { useWallet } from '../contexts/WalletContext';
+import { useEpochWallet } from '../contexts/WalletContext';
 import NFTCard from '../components/nft/NFTCard';
 import MintButton from '../components/nft/MintButton';
 import SocialShareButtons from '../components/social/SocialShareButtons';
@@ -18,7 +18,7 @@ const getTierFromPoints = (points: number): 'og' | 'captain' | 'corporal' | 'sol
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { connectWallet, isConnected, account, firstTxDate, points, isChecking, checkWalletHistory } = useWallet();
+  const { connectWallet, isConnected, account, firstTxDate, points, isChecking, checkWalletHistory } = useEpochWallet();
   const [isNftMinted, setIsNftMinted] = useState(false);
 
   const handleSearch = async (address: string) => {

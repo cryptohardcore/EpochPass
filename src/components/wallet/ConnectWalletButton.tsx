@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Wallet, Loader2 } from 'lucide-react';
-import { useWallet } from '../../contexts/WalletContext';
+import { useEpochWallet } from '../../contexts/WalletContext';
 import { formatAddress } from '../../utils/formatters';
 
 interface ConnectWalletButtonProps {
@@ -12,7 +12,7 @@ const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({
   buttonClassName = '',
   showText = true,
 }) => {
-  const { account, connectWallet, disconnectWallet, isConnecting, isConnected } = useWallet();
+  const { account, connectWallet, disconnectWallet, isConnecting, isConnected } = useEpochWallet();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {

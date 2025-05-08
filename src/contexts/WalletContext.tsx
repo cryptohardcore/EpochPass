@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ethers } from 'ethers';
+import { createAppKit, useAppKit } from '@reown/appkit/react';
+import { useAccount } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
+import { arbitrum, mainnet } from '@reown/appkit/networks';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 
 interface WalletContextType {
   account: string | null;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   isConnecting: boolean;
-  provider: ethers.BrowserProvider | null;
   isConnected: boolean;
   firstTxDate: string | null;
   points: number | null;
@@ -19,7 +23,6 @@ const WalletContext = createContext<WalletContextType>({
   connectWallet: async () => {},
   disconnectWallet: () => {},
   isConnecting: false,
-  provider: null,
   isConnected: false,
   firstTxDate: null,
   points: null,
@@ -27,7 +30,7 @@ const WalletContext = createContext<WalletContextType>({
   isChecking: false,
 });
 
-export const useWallet = () => useContext(WalletContext);
+export const useEpochWallet = () => useContext(WalletContext);
 
 interface WalletProviderProps {
   children: ReactNode;
@@ -36,79 +39,72 @@ interface WalletProviderProps {
 const ALCHEMY_API_KEY = 'D58XPcpaMPHKrXvOIB_dV5Bxyhd6osAn';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 
+// 0. Setup queryClient
+const queryClient = new QueryClient();
+
+// 1. Get projectId from https://cloud.reown.com
+const projectId = 'c7c31e2a156b6d9335a0aaed4896cacb';
+
+// 2. Create a metadata object
+const metadata = {
+  name: 'EpochPass',
+  description: 'Track your Ethereum journey and earn points',
+  url: window.location.origin,
+  icons: ['https://assets.reown.com/reown-profile-pic.png']
+};
+
+// 3. Set the networks
+const networks = [mainnet, arbitrum];
+
+// 4. Create Wagmi Adapter
+const wagmiAdapter = new WagmiAdapter({
+  networks,
+  projectId,
+  ssr: true
+});
+
+// 5. Create modal
+createAppKit({
+  adapters: [wagmiAdapter],
+  networks,
+  projectId,
+  metadata,
+  features: {
+    analytics: true
+  }
+});
+
+export function AppKitProvider({ children }: { children: ReactNode }) {
+  return (
+    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+
 export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
-  const [account, setAccount] = useState<string | null>(null);
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const { open } = useAppKit();
+  const { address, isConnected, isConnecting } = useAccount();
   const [firstTxDate, setFirstTxDate] = useState<string | null>(null);
   const [points, setPoints] = useState<number | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
-  useEffect(() => {
-    const savedAccount = localStorage.getItem('connectedAccount');
-    if (savedAccount) {
-      checkConnection();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (window.ethereum) {
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('disconnect', disconnectWallet);
-    }
-
-    return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('disconnect', disconnectWallet);
-      }
-    };
-  }, []);
-
-  const checkConnection = async () => {
+  const connectWallet = async () => {
     try {
-      if (window.ethereum) {
-        const ethProvider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await ethProvider.listAccounts();
-        
-        if (accounts.length > 0) {
-          setAccount(accounts[0].address);
-          setProvider(ethProvider);
-          localStorage.setItem('connectedAccount', accounts[0].address);
-        }
-      }
+      await open();
     } catch (error) {
-      console.error('Error checking connection:', error);
+      console.error('Error connecting wallet:', error);
     }
   };
 
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      alert('Please install MetaMask or another Ethereum wallet provider');
-      return;
-    }
-
-    setIsConnecting(true);
-    
-    try {
-      const ethProvider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      
-      setAccount(accounts[0]);
-      setProvider(ethProvider);
-      localStorage.setItem('connectedAccount', accounts[0]);
-
-      // Check wallet history after connecting
-      await checkWalletHistory(accounts[0]);
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-    } finally {
-      setIsConnecting(false);
-    }
+  const disconnectWallet = () => {
+    // Note: Disconnect is handled by the wallet provider
+    setFirstTxDate(null);
+    setPoints(null);
   };
 
   const checkWalletHistory = async (addressParam?: string) => {
-    const addressToCheck = addressParam || account;
+    const addressToCheck = addressParam || address;
     if (!addressToCheck) {
       console.error('No address provided');
       return;
@@ -187,33 +183,20 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   };
 
-  const disconnectWallet = () => {
-    setAccount(null);
-    setProvider(null);
-    setFirstTxDate(null);
-    setPoints(null);
-    localStorage.removeItem('connectedAccount');
-  };
-
-  const handleAccountsChanged = (accounts: string[]) => {
-    if (accounts.length === 0) {
-      disconnectWallet();
-    } else {
-      setAccount(accounts[0]);
-      localStorage.setItem('connectedAccount', accounts[0]);
-      checkWalletHistory(accounts[0]);
+  useEffect(() => {
+    if (address) {
+      checkWalletHistory(address);
     }
-  };
+  }, [address]);
 
   return (
     <WalletContext.Provider
       value={{
-        account,
+        account: address || null,
         connectWallet,
         disconnectWallet,
         isConnecting,
-        provider,
-        isConnected: !!account,
+        isConnected,
         firstTxDate,
         points,
         checkWalletHistory,
@@ -227,6 +210,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: Record<string, unknown>;
   }
 }

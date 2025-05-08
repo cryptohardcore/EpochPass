@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Hourglass } from 'lucide-react';
 import { Transition } from '@headlessui/react';
-import { useWallet } from '../../contexts/WalletContext';
+import { useEpochWallet } from '../../contexts/WalletContext';
 import ConnectWalletButton from '../wallet/ConnectWalletButton';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { isConnected } = useWallet();
+  const { isConnected } = useEpochWallet();
 
   useEffect(() => {
     const handleScroll = () => {
