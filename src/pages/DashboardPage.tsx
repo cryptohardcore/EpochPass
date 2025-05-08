@@ -46,6 +46,29 @@ const DashboardPage = () => {
   const shareUrl = `https://epochpass.eth/address/${account}`;
   const shareText = `I've been on Ethereum for ${timeAgo} and ranked #${points} on @EpochPass! Check your rank:`;
 
+  const NoInteractionScreen = () => (
+    <div className="container-custom py-8 md:py-16">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">My EpochPass</h1>
+          <p className="text-gray-400">
+            No interaction yet. Connect your wallet to see your Ethereum history.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="flex flex-col">
+            <NFTCard
+              tier="soldier"
+              timestamp={Date.now() / 1000}
+              imageUrl="https://images.pexels.com/photos/8370752/pexels-photo-8370752.jpeg"
+              rank={0}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="relative">
       <div className="relative bg-hero-pattern hero-animation">
@@ -190,6 +213,7 @@ const DashboardPage = () => {
           </div>
         </div>
       )}
+      {!firstTxDate && <NoInteractionScreen />}
     </div>
   );
 };
