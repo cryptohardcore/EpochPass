@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Wallet, Loader2 } from 'lucide-react';
-import { useEpochWallet } from '../../contexts/WalletContext';
+import { useEpochWallet } from '../../contexts/WalletContext.tsx';
 import { formatAddress } from '../../utils/formatters';
 
 interface ConnectWalletButtonProps {
