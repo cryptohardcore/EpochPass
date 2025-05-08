@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Hourglass } from 'lucide-react';
 import AddressInput from '../components/wallet/AddressInput';
-import { useWallet } from '../contexts/WalletContext';
+import { useEpochWallet } from '../contexts/WalletContext';
 import NFTCard from '../components/nft/NFTCard';
 import MintButton from '../components/nft/MintButton';
 import SocialShareButtons from '../components/social/SocialShareButtons';
@@ -16,8 +16,9 @@ const getTierFromPoints = (points: number): 'og' | 'captain' | 'corporal' | 'sol
 };
 
 const DashboardPage = () => {
-  const { connectWallet, isConnected, account, firstTxDate, points, isChecking, checkWalletHistory } = useWallet();
+  const { connectWallet, isConnected, account, firstTxDate, points, isChecking, checkWalletHistory } = useEpochWallet();
   const [isNftMinted, setIsNftMinted] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ const DashboardPage = () => {
   }, [firstTxDate]);
 
   const handleSearch = async (address: string) => {
+    setHasSearched(true);
     await checkWalletHistory(address);
   };
 
@@ -45,6 +47,29 @@ const DashboardPage = () => {
   const remainingNfts = 10000 - 4253; // Mock data
   const shareUrl = `https://epochpass.eth/address/${account}`;
   const shareText = `I've been on Ethereum for ${timeAgo} and ranked #${points} on @EpochPass! Check your rank:`;
+
+  const NoInteractionScreen = () => (
+    <div className="container-custom py-8 md:py-16">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">My EpochPass</h1>
+          <p className="text-gray-400">
+            No interaction yet. Connect your wallet to see your Ethereum history.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="flex flex-col">
+            <NFTCard
+              tier="soldier"
+              timestamp={Date.now() / 1000}
+              imageUrl="https://images.pexels.com/photos/8370752/pexels-photo-8370752.jpeg"
+              rank={0}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="relative">
@@ -85,7 +110,10 @@ const DashboardPage = () => {
                     </div>
                     
                     <button
-                      onClick={() => connectWallet()}
+                      onClick={() => {
+                        setHasSearched(true);
+                        connectWallet();
+                      }}
                       className="btn-primary"
                       disabled={isChecking}
                     >
@@ -103,92 +131,96 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {firstTxDate && (
-        <div ref={resultsRef} className="container-custom py-8 md:py-16">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-10">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">My EpochPass</h1>
-              <p className="text-gray-400">
-                Discover your Ethereum history and claim your unique soulbound NFT.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="flex flex-col">
-                <NFTCard
-                  tier={tier}
-                  timestamp={timestamp}
-                  imageUrl="https://images.pexels.com/photos/8370752/pexels-photo-8370752.jpeg"
-                  rank={points || 0}
-                />
-                
-                <div className="mt-6">
-                  <div className="mb-4 flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Share your rank</h3>
-                    <SocialShareButtons
-                      title="My EpochPass Rank"
-                      text={shareText}
-                      url={shareUrl}
-                    />
-                  </div>
-                </div>
+      {(isConnected || hasSearched) && (
+        firstTxDate ? (
+          <div ref={resultsRef} className="container-custom py-8 md:py-16">
+            <div className="max-w-6xl mx-auto">
+              <div className="mb-10">
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">My EpochPass</h1>
+                <p className="text-gray-400">
+                  Discover your Ethereum history and claim your unique soulbound NFT.
+                </p>
               </div>
               
-              <div>
-                <div className="card p-6 md:p-8 mb-6">
-                  <h2 className="text-2xl font-bold mb-6">Your Ethereum Journey</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="flex flex-col">
+                  <NFTCard
+                    tier={tier}
+                    timestamp={timestamp}
+                    imageUrl="https://images.pexels.com/photos/8370752/pexels-photo-8370752.jpeg"
+                    rank={points || 0}
+                  />
                   
-                  <div className="space-y-6">
-                    <div>
-                      <div className="text-lg font-medium">First Transaction</div>
-                      <div className="text-gray-400">
-                        {firstTxDate ? new Date(firstTxDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'No transactions found'}
-                      </div>
+                  <div className="mt-6">
+                    <div className="mb-4 flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Share your rank</h3>
+                      <SocialShareButtons
+                        title="My EpochPass Rank"
+                        text={shareText}
+                        url={shareUrl}
+                      />
                     </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="card p-6 md:p-8 mb-6">
+                    <h2 className="text-2xl font-bold mb-6">Your Ethereum Journey</h2>
                     
-                    <div>
-                      <div className="text-lg font-medium">Time in Ethereum</div>
-                      <div className="text-gray-400">{timeAgo}</div>
-                    </div>
-                    
-                    <div className="border-t border-gray-800 pt-6 mt-6">
-                      <div className="flex justify-between items-center mb-3">
-                        <h3 className="text-lg font-medium">Claim Your Soulbound NFT</h3>
-                        <span className="text-sm text-gray-400">{remainingNfts} / 10000 remaining</span>
+                    <div className="space-y-6">
+                      <div>
+                        <div className="text-lg font-medium">First Transaction</div>
+                        <div className="text-gray-400">
+                          {firstTxDate ? new Date(firstTxDate).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          }) : 'No transactions found'}
+                        </div>
                       </div>
                       
-                      {isNftMinted ? (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="bg-success-700/20 border border-success-700/50 rounded-lg p-4 text-success-50"
-                        >
-                          <div className="font-medium">NFT successfully minted!</div>
-                          <p className="text-sm opacity-80 mt-1">Your EpochPass NFT is now bound to your wallet forever.</p>
-                        </motion.div>
-                      ) : (
-                        <>
-                          <p className="text-gray-400 mb-4">
-                            Preserve your Ethereum history by minting a unique, soulbound NFT that captures your timeline.
-                          </p>
-                          <MintButton 
-                            price="0.05"
-                            onMint={handleMint}
-                            disabled={!isConnected}
-                          />
-                        </>
-                      )}
+                      <div>
+                        <div className="text-lg font-medium">Time in Ethereum</div>
+                        <div className="text-gray-400">{timeAgo}</div>
+                      </div>
+                      
+                      <div className="border-t border-gray-800 pt-6 mt-6">
+                        <div className="flex justify-between items-center mb-3">
+                          <h3 className="text-lg font-medium">Claim Your Soulbound NFT</h3>
+                          <span className="text-sm text-gray-400">{remainingNfts} / 10000 remaining</span>
+                        </div>
+                        
+                        {isNftMinted ? (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-success-700/20 border border-success-700/50 rounded-lg p-4 text-success-50"
+                          >
+                            <div className="font-medium">NFT successfully minted!</div>
+                            <p className="text-sm opacity-80 mt-1">Your EpochPass NFT is now bound to your wallet forever.</p>
+                          </motion.div>
+                        ) : (
+                          <>
+                            <p className="text-gray-400 mb-4">
+                              Preserve your Ethereum history by minting a unique, soulbound NFT that captures your timeline.
+                            </p>
+                            <MintButton 
+                              price="0.05"
+                              onMint={handleMint}
+                              disabled={!isConnected}
+                            />
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <NoInteractionScreen />
+        )
       )}
     </div>
   );
