@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
-import { WalletProvider } from './contexts/WalletContext';
+import { WalletProvider } from './contexts/WalletContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
