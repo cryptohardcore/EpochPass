@@ -5,6 +5,7 @@ import { WagmiProvider } from 'wagmi';
 import { mainnet } from '@reown/appkit/networks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { config } from '../config/app.config';
 
 interface WalletContextType {
   account: string | null;
@@ -16,6 +17,7 @@ interface WalletContextType {
   points: number | null;
   checkWalletHistory: (address?: string) => Promise<void>;
   isChecking: boolean;
+  error: string | null;
 }
 
 const WalletContext = createContext<WalletContextType>({
@@ -28,6 +30,7 @@ const WalletContext = createContext<WalletContextType>({
   points: null,
   checkWalletHistory: async () => {},
   isChecking: false,
+  error: null,
 });
 
 export const useEpochWallet = () => useContext(WalletContext);
@@ -36,22 +39,18 @@ interface WalletProviderProps {
   children: ReactNode;
 }
 
-const ALCHEMY_API_KEY = 'D58XPcpaMPHKrXvOIB_dV5Bxyhd6osAn';
+// Get API key from environment variables
+const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY || 'D58XPcpaMPHKrXvOIB_dV5Bxyhd6osAn';
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 
 // 0. Setup queryClient
 const queryClient = new QueryClient();
 
-// 1. Get projectId from https://cloud.reown.com
-const projectId = 'c7c31e2a156b6d9335a0aaed4896cacb';
+// 1. Get projectId from config
+const projectId = config.reown.projectId;
 
-// 2. Create a metadata object
-const metadata = {
-  name: 'EpochPass',
-  description: 'Track your Ethereum journey and earn points',
-  url: window.location.origin,
-  icons: ['https://assets.reown.com/reown-profile-pic.png']
-};
+// 2. Get metadata from config
+const metadata = config.reown.metadata;
 
 // 3. Set the networks
 const networks = [mainnet];
@@ -66,7 +65,7 @@ const wagmiAdapter = new WagmiAdapter({
 // 5. Create modal
 createAppKit({
   adapters: [wagmiAdapter],
-  networks,
+  networks: [mainnet],
   projectId,
   metadata,
   features: {
@@ -88,30 +87,39 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [firstTxDate, setFirstTxDate] = useState<string | null>(null);
   const [points, setPoints] = useState<number | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const connectWallet = async () => {
     try {
+      setError(null);
       await open();
     } catch (error) {
       console.error('Error connecting wallet:', error);
+      setError('Failed to connect wallet. Please try again.');
     }
   };
 
   const disconnectWallet = () => {
-    // Disconnect using Reown AppKit
-    wagmiAdapter.disconnect();
-    setFirstTxDate(null);
-    setPoints(null);
+    try {
+      setError(null);
+      wagmiAdapter.disconnect();
+      setFirstTxDate(null);
+      setPoints(null);
+    } catch (error) {
+      console.error('Error disconnecting wallet:', error);
+      setError('Failed to disconnect wallet. Please try again.');
+    }
   };
 
   const checkWalletHistory = async (addressParam?: string) => {
     const addressToCheck = addressParam || address;
     if (!addressToCheck) {
-      console.error('No address provided');
+      setError('No address provided');
       return;
     }
 
     setIsChecking(true);
+    setError(null);
     
     try {
       // Get first transfer
@@ -127,7 +135,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         }]
       };
 
-      const transferResponse = await fetch(ALCHEMY_URL, {
+      const transferResponse = await fetch(config.alchemy.url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(transferData)
@@ -151,7 +159,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           params: [firstTransfer.blockNum, false]
         };
 
-        const blockResponse = await fetch(ALCHEMY_URL, {
+        const blockResponse = await fetch(config.alchemy.url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(blockData)
@@ -177,6 +185,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Error checking wallet history:', error);
+      setError('Failed to fetch wallet history. Please try again.');
       setFirstTxDate(null);
       setPoints(0);
     } finally {
@@ -202,6 +211,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         points,
         checkWalletHistory,
         isChecking,
+        error,
       }}
     >
       {children}
