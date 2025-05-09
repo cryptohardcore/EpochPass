@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { createAppKit, useAppKit } from '@reown/appkit/react';
 import { useAccount } from 'wagmi';
 import { WagmiProvider } from 'wagmi';
-import { arbitrum, mainnet } from '@reown/appkit/networks';
+import { mainnet } from '@reown/appkit/networks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 
@@ -54,7 +54,7 @@ const metadata = {
 };
 
 // 3. Set the networks
-const networks = [mainnet, arbitrum];
+const networks = [mainnet];
 
 // 4. Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({
@@ -98,7 +98,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   };
 
   const disconnectWallet = () => {
-    // Note: Disconnect is handled by the wallet provider
+    // Disconnect using Reown AppKit
+    wagmiAdapter.disconnect();
     setFirstTxDate(null);
     setPoints(null);
   };
