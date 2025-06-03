@@ -7,6 +7,7 @@ import NFTCard from '../components/nft/NFTCard';
 import MintButton from '../components/nft/MintButton';
 import SocialShareButtons from '../components/social/SocialShareButtons';
 import { formatDetailedTimeAgo } from '../utils/formatters';
+import { useMintNFT } from '../hooks/useMintNFT';
 
 const getTierFromPoints = (points: number): 'og' | 'captain' | 'corporal' | 'soldier' => {
   if (points >= 300) return 'og';
@@ -17,9 +18,10 @@ const getTierFromPoints = (points: number): 'og' | 'captain' | 'corporal' | 'sol
 
 const DashboardPage = () => {
   const { connectWallet, isConnected, account, firstTxDate, points, isChecking, checkWalletHistory } = useEpochWallet();
-  const [isNftMinted, setIsNftMinted] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const { handleMint, isMinting, isMinted, error } = useMintNFT();
+
 
   useEffect(() => {
     if (firstTxDate && resultsRef.current) {
@@ -30,15 +32,6 @@ const DashboardPage = () => {
   const handleSearch = async (address: string) => {
     setHasSearched(true);
     await checkWalletHistory(address);
-  };
-
-  const handleMint = async () => {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        setIsNftMinted(true);
-        resolve();
-      }, 2000);
-    });
   };
 
   const timestamp = firstTxDate ? new Date(firstTxDate).getTime() / 1000 : Date.now() / 1000;
@@ -190,7 +183,7 @@ const DashboardPage = () => {
                           <span className="text-sm text-gray-400">{remainingNfts} / 10000 remaining</span>
                         </div>
                         
-                        {isNftMinted ? (
+                        {isMinted ? (
                           <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -204,9 +197,12 @@ const DashboardPage = () => {
                             <p className="text-gray-400 mb-4">
                               Preserve your Ethereum history by minting a unique, soulbound NFT that captures your timeline.
                             </p>
-                            <MintButton 
+                            <MintButton
                               price="0.05"
                               onMint={handleMint}
+                              isMinting={isMinting}
+                              isMinted={isMinted}
+                              error={error}
                               disabled={!isConnected}
                             />
                           </>

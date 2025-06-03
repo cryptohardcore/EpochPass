@@ -40,7 +40,7 @@ interface WalletProviderProps {
 }
 
 // Get API key from environment variables
-const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY || 'D58XPcpaMPHKrXvOIB_dV5Bxyhd6osAn';
+const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`;
 
 // 0. Setup queryClient
