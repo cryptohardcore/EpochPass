@@ -1,35 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Loader2 } from 'lucide-react';
 
 interface MintButtonProps {
   price: string;
-  onMint: () => Promise<void>;
+ onMint: (imageHash?: string) => Promise<string | false>;
   disabled?: boolean;
+  isMinting?: boolean;
+  isMinted?: boolean;
+  error?: string | null;
   className?: string;
 }
 
-const MintButton: React.FC<MintButtonProps> = ({ 
-  price, 
-  onMint, 
+const MintButton: React.FC<MintButtonProps> = ({
+  price,
+  onMint,
   disabled = false,
-  className = ''
+  isMinting = false,
+  isMinted = false,
+  error = null,
+  className = '',
 }) => {
-  const [isMinting, setIsMinting] = useState(false);
-  
   const handleMint = async () => {
     if (disabled || isMinting) return;
-    
-    setIsMinting(true);
-    try {
-      await onMint();
-    } catch (error) {
-      console.error('Mint error:', error);
-    } finally {
-      setIsMinting(false);
-    }
+    await onMint();
   };
-  
+
   return (
     <motion.button
       whileHover={{ scale: 1.05 }}
@@ -42,6 +38,16 @@ const MintButton: React.FC<MintButtonProps> = ({
         <>
           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
           Minting...
+        </>
+      ) : isMinted ? (
+        <>
+          <Sparkles className="w-5 h-5 mr-2" />
+          Minted!
+        </>
+      ) : error ? (
+        <>
+          <span className="w-5 h-5 mr-2">⚠️</span>
+          Error
         </>
       ) : (
         <>
